@@ -1,0 +1,321 @@
+/* 基本設定 */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  color: #333;
+  background: #faf9f6;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Noto Sans JP",
+    sans-serif;
+  line-height: 1.8;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+/* ヘッダー */
+.site-header {
+  background: #fff;
+  border-bottom: 1px solid #eee;
+}
+
+.header-inner {
+  max-width: 1100px;
+  margin: auto;
+  padding: 18px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  font-size: 23px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.logo span {
+  color: #bd8b64;
+}
+
+nav {
+  display: flex;
+  gap: 28px;
+  font-size: 14px;
+}
+
+/* メインビジュアル */
+.hero {
+  background: linear-gradient(135deg, #e8ded2, #f4eee7);
+  padding: 100px 24px;
+}
+
+.hero-inner {
+  max-width: 1050px;
+  margin: auto;
+}
+
+.hero-label,
+.section-label {
+  color: #a47b5c;
+  font-size: 12px;
+  font-weight: bold;
+  letter-spacing: 3px;
+}
+
+.hero h1 {
+  font-size: clamp(34px, 6vw, 54px);
+  line-height: 1.5;
+  margin: 15px 0;
+}
+
+.hero-inner > p:last-child {
+  color: #666;
+}
+
+/* 全体 */
+.container {
+  max-width: 1050px;
+  margin: 70px auto;
+  padding: 0 24px;
+}
+
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  margin-bottom: 25px;
+}
+
+.section-heading h2,
+.about-section h2 {
+  margin: 0;
+  font-size: 28px;
+}
+
+#postCount {
+  color: #888;
+  font-size: 13px;
+}
+
+/* 検索 */
+.search-area {
+  margin-bottom: 20px;
+}
+
+.search-area input {
+  width: 100%;
+  padding: 14px 18px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: white;
+  outline: none;
+}
+
+.search-area input:focus {
+  border-color: #bd8b64;
+}
+
+/* カテゴリ */
+.category-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 30px;
+}
+
+.category-button {
+  border: 1px solid #ddd;
+  border-radius: 30px;
+  padding: 7px 18px;
+  background: white;
+  color: #555;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.category-button:hover,
+.category-button.active {
+  background: #bd8b64;
+  border-color: #bd8b64;
+  color: white;
+}
+
+/* 記事一覧 */
+.post-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 25px;
+}
+
+.post-card {
+  overflow: hidden;
+  background: white;
+  border-radius: 10px;
+  border: 1px solid #eee;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+
+.post-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.07);
+}
+
+.post-image {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  display: block;
+  background: #e8ded2;
+}
+
+.post-info {
+  padding: 18px;
+}
+
+.post-meta {
+  color: #999;
+  font-size: 12px;
+}
+
+.post-category {
+  display: inline-block;
+  margin-left: 10px;
+  color: #a47b5c;
+}
+
+.post-title {
+  margin: 8px 0;
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.post-excerpt {
+  color: #777;
+  font-size: 13px;
+  margin: 8px 0 0;
+}
+
+.empty-message {
+  padding: 30px 0;
+  color: #888;
+  text-align: center;
+}
+
+/* 記事詳細 */
+.article-section {
+  max-width: 800px;
+  margin: 0 auto 80px;
+}
+
+.back-button {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 10px 18px;
+  cursor: pointer;
+  margin-bottom: 35px;
+}
+
+.back-button:hover {
+  background: #eee;
+}
+
+.article-title {
+  font-size: clamp(28px, 5vw, 40px);
+  line-height: 1.5;
+  margin: 15px 0;
+}
+
+.article-image {
+  width: 100%;
+  max-height: 420px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin: 25px 0;
+}
+
+.article-body {
+  font-size: 16px;
+  line-height: 2.1;
+}
+
+.article-body h2 {
+  margin-top: 35px;
+  border-bottom: 2px solid #e8ded2;
+  padding-bottom: 8px;
+}
+
+.article-body p {
+  margin: 20px 0;
+}
+
+/* ブログについて */
+.about-section {
+  margin-top: 100px;
+  padding: 45px;
+  background: #f0ebe5;
+  border-radius: 10px;
+}
+
+.about-section p:last-child {
+  color: #666;
+}
+
+/* フッター */
+.site-footer {
+  background: #333;
+  color: #ddd;
+  text-align: center;
+  padding: 25px;
+  font-size: 12px;
+}
+
+/* スマートフォン */
+@media (max-width: 700px) {
+  .header-inner {
+    padding: 15px;
+  }
+
+  nav {
+    gap: 12px;
+    font-size: 12px;
+  }
+
+  .hero {
+    padding: 70px 20px;
+  }
+
+  .container {
+    margin: 45px auto;
+    padding: 0 16px;
+  }
+
+  .post-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .post-image {
+    height: 210px;
+  }
+
+  .about-section {
+    padding: 25px;
+  }
+}

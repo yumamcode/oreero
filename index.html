@@ -1,0 +1,81 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="日々の出来事や役立つ情報を発信するブログです。">
+  <title>MY BLOG - 日々の記録</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="#" class="logo" id="homeLogo">MY BLOG<span>.</span></a>
+      <nav>
+        <a href="#home">ホーム</a>
+        <a href="#about">このブログについて</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero" id="home">
+    <div class="hero-inner">
+      <p class="hero-label">WELCOME TO MY BLOG</p>
+      <h1>日々の暮らしを、<br>もっと楽しく。</h1>
+      <p>日常の出来事や気づき、役立つ情報を発信しています。</p>
+    </div>
+  </section>
+
+  <main class="container">
+    <section class="blog-section" id="blog">
+      <div class="section-heading">
+        <div>
+          <p class="section-label">BLOG</p>
+          <h2>最新の記事</h2>
+        </div>
+        <span id="postCount"></span>
+      </div>
+
+      <div class="search-area">
+        <input
+          type="search"
+          id="searchInput"
+          placeholder="記事を検索..."
+          aria-label="記事を検索"
+        >
+      </div>
+
+      <div class="category-list" id="categories"></div>
+
+      <div class="post-grid" id="postList"></div>
+
+      <p class="empty-message" id="emptyMessage" hidden>
+        該当する記事が見つかりませんでした。
+      </p>
+    </section>
+
+    <section class="article-section" id="articleSection" hidden>
+      <button class="back-button" id="backButton">← 記事一覧に戻る</button>
+      <article id="articleContent"></article>
+    </section>
+
+    <section class="about-section" id="about">
+      <p class="section-label">ABOUT</p>
+      <h2>このブログについて</h2>
+      <p>
+        このブログでは、日々の生活で感じたことや、
+        役立つ情報などを発信しています。
+        ゆっくり楽しんでいってください。
+      </p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>© <span id="year"></span> MY BLOG. All Rights Reserved.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

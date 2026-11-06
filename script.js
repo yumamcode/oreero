@@ -1,74 +1,14 @@
-/* =================================
-   ブログ記事データ
-   新しい記事はここに追加します
-================================= */
+const $ = (id) => document.getElementById(id);
 
-const posts = [
-  {
-    id: 1,
-    title: "はじめてのブログ",
-    date: "2026-11-02",
-    category: "日記",
-    image: "https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=900",
-    excerpt: "今日からブログを始めることにしました。",
-    content: `
-      <p>こんにちは。今日からこのブログを始めます。</p>
-      <p>日々の出来事や、暮らしの中で見つけた小さな発見などを記録していきたいと思います。</p>
-      <h2>ブログを始めた理由</h2>
-      <p>自分の考えや経験を文章にして残しておきたいと思ったことがきっかけです。</p>
-      <p>これから少しずつ記事を増やしていきます。よろしくお願いします。</p>
-    `,
-  },
-  {
-    id: 2,
-    title: "快適なデスク環境を作る",
-    date: "2026-11-01",
-    category: "暮らし",
-    image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=900",
-    excerpt: "毎日使うデスクを使いやすく整理してみました。",
-    content: `
-      <p>毎日長い時間を過ごすデスク。少し整理するだけで作業が快適になります。</p>
-      <h2>整理整頓のポイント</h2>
-      <p>まずは机の上にある不要なものを片付けます。</p>
-      <p>よく使うものだけを手の届く範囲に置くと便利です。</p>
-      <h2>まとめ</h2>
-      <p>快適な環境を作って、毎日の作業を楽しみましょう。</p>
-    `,
-  },
-  {
-    id: 3,
-    title: "休日の過ごし方",
-    date: "2026-10-30",
-    category: "日記",
-    image: "https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?w=900",
-    excerpt: "ゆっくり過ごす休日の楽しみについて。",
-    content: `
-      <p>休日はいつもより少しゆっくり起きて、のんびり過ごすのが好きです。</p>
-      <h2>自分の時間を大切にする</h2>
-      <p>読書をしたり、散歩をしたり、好きなことをする時間を作っています。</p>
-      <p>忙しい毎日の中で、こうした時間も大切にしたいですね。</p>
-    `,
-  },
-];
+const homeView = $("home-view");
+const articleView = $("article-view");
+const adminView = $("admin-view");
 
-/* =================================
-   ブログの基本機能
-================================= */
+let posts = [];
+let photos = [];
 
-const postList = document.getElementById("postList");
-const categories = document.getElementById("categories");
-const searchInput = document.getElementById("searchInput");
-const postCount = document.getElementById("postCount");
-const emptyMessage = document.getElementById("emptyMessage");
-
-const blogSection = document.getElementById("blog");
-const articleSection = document.getElementById("articleSection");
-const articleContent = document.getElementById("articleContent");
-
-let selectedCategory = "すべて";
-
-/* HTMLエスケープ */
-function escapeHTML(value) {
+// HTMLに文字列を安全に表示するための処理
+function escapeHTML(value = "") {
   return String(value).replace(
     /[&<>"']/g,
     (char) =>
@@ -77,180 +17,467 @@ function escapeHTML(value) {
         "<": "&lt;",
         ">": "&gt;",
         '"': "&quot;",
-        "'": "&#039;",
+        "'": "&#39;",
       })[char],
   );
 }
 
-/* 日付の表示 */
-function formatDate(date) {
-  const parts = date.split("-");
-  return `${parts[0]}.${parts[1]}.${parts[2]}`;
-}
+// 記事一覧を読み込む
+async function loadPosts() {
+  const list = $("post-list");
+  list.innerHTML = "<p>記事を読み込んでいます...</p>";
 
-/* =================================
-   カテゴリ表示
-================================= */
-
-function renderCategories() {
-  const categoryNames = [
-    "すべて",
-    ...new Set(posts.map((post) => post.category)),
-  ];
-
-  categories.innerHTML = categoryNames
-    .map(
-      (category) => `
-    <button
-      class="category-button ${selectedCategory === category ? "active" : ""}"
-      data-category="${escapeHTML(category)}"
-    >
-      ${escapeHTML(category)}
-    </button>
-  `,
-    )
-    .join("");
-
-  categories.querySelectorAll("button").forEach((button) => {
-    button.addEventListener("click", () => {
-      selectedCategory = button.dataset.category;
-      renderCategories();
-      renderPosts();
+  try {
+    const response = await fetch("posts/index.json", {
+      cache: "no-store",
     });
-  });
+
+    if (!response.ok) {
+      throw new Error("記事一覧を読み込めません");
+    }
+
+    const paths = await response.json();
+
+    if (!Array.isArray(paths)) {
+      throw new Error("posts/index.json の形式が正しくありません");
+    }
+
+    const results = await Promise.all(
+      paths.map(async (path) => {
+        const res = await fetch(path, { cache: "no-store" });
+        if (!res.ok) return null;
+        return await res.json();
+      }),
+    );
+
+    posts = results
+      .filter(Boolean)
+      .sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")));
+
+    renderPostList();
+  } catch (error) {
+    list.innerHTML =
+      "<p>記事を読み込めませんでした。posts/index.jsonを確認してください。</p>";
+    console.error(error);
+  }
 }
 
-/* =================================
-   記事一覧表示
-================================= */
+// 記事一覧を表示
+function renderPostList() {
+  const list = $("post-list");
 
-function renderPosts() {
-  const keyword = searchInput.value.trim().toLowerCase();
-
-  const filteredPosts = posts
-    .filter((post) => {
-      const matchesCategory =
-        selectedCategory === "すべて" || post.category === selectedCategory;
-
-      const matchesKeyword = [post.title, post.excerpt, post.category]
-        .join(" ")
-        .toLowerCase()
-        .includes(keyword);
-
-      return matchesCategory && matchesKeyword;
-    })
-    .sort((a, b) => b.date.localeCompare(a.date));
-
-  postCount.textContent = `${filteredPosts.length} ARTICLES`;
-
-  postList.innerHTML = filteredPosts
-    .map(
-      (post) => `
-    <a class="post-card" href="#post/${post.id}">
-      <img
-        class="post-image"
-        src="${escapeHTML(post.image)}"
-        alt="${escapeHTML(post.title)}"
-        loading="lazy"
-      >
-      <div class="post-info">
-        <div class="post-meta">
-          ${escapeHTML(formatDate(post.date))}
-          <span class="post-category">
-            ${escapeHTML(post.category)}
-          </span>
-        </div>
-        <h3 class="post-title">${escapeHTML(post.title)}</h3>
-        <p class="post-excerpt">${escapeHTML(post.excerpt)}</p>
-      </div>
-    </a>
-  `,
-    )
-    .join("");
-
-  emptyMessage.hidden = filteredPosts.length !== 0;
-}
-
-/* =================================
-   記事詳細表示
-================================= */
-
-function showArticle(id) {
-  const post = posts.find((item) => item.id === Number(id));
-
-  if (!post) {
-    location.hash = "#home";
+  if (posts.length === 0) {
+    list.innerHTML = "<p>まだ記事はありません。</p>";
     return;
   }
 
-  blogSection.hidden = true;
-  document.getElementById("about").hidden = true;
-  articleSection.hidden = false;
+  list.innerHTML = posts
+    .map((post) => {
+      const images = Array.isArray(post.images) ? post.images : [];
+      const firstImage = images[0]?.src || post.image || "";
+      const imageHTML = firstImage
+        ? `<img src="${escapeHTML(firstImage)}" alt="" loading="lazy">`
+        : `<div class="empty-image">写真なし</div>`;
 
-  articleContent.innerHTML = `
-    <div class="post-meta">
-      ${escapeHTML(formatDate(post.date))}
-      <span class="post-category">
-        ${escapeHTML(post.category)}
-      </span>
-    </div>
-
-    <h1 class="article-title">
-      ${escapeHTML(post.title)}
-    </h1>
-
-    <img
-      class="article-image"
-      src="${escapeHTML(post.image)}"
-      alt="${escapeHTML(post.title)}"
-    >
-
-    <div class="article-body">
-      ${post.content}
-    </div>
-  `;
-
-  window.scrollTo(0, 0);
+      return `
+      <div class="post-card">
+        <a href="#post/${encodeURIComponent(post.id)}">
+          ${imageHTML}
+          <div class="post-card-body">
+            <div class="post-meta">
+              ${escapeHTML(post.category || "日記")}
+              ・${escapeHTML(post.date || "")}
+            </div>
+            <h3>${escapeHTML(post.title || "無題")}</h3>
+            <p>${escapeHTML(post.description || post.excerpt || "")}</p>
+          </div>
+        </a>
+      </div>
+    `;
+    })
+    .join("");
 }
 
-/* =================================
-   URLによる画面切り替え
-================================= */
+// 記事詳細を表示
+function renderArticle(id) {
+  const post = posts.find((item) => String(item.id) === String(id));
+  const content = $("article-content");
 
-function handleRoute() {
-  const match = location.hash.match(/^#post\/(\d+)$/);
+  if (!post) {
+    content.innerHTML = "<p>記事が見つかりませんでした。</p>";
+    return;
+  }
 
-  if (match) {
-    showArticle(match[1]);
+  const images = Array.isArray(post.images) ? post.images : [];
+
+  const imageHTML = images
+    .map(
+      (image) => `
+    <figure class="article-photo">
+      <img src="${escapeHTML(image.src)}"
+           alt="${escapeHTML(image.caption || post.title || "")}"
+           loading="lazy">
+      ${
+        image.caption
+          ? `<figcaption>${escapeHTML(image.caption)}</figcaption>`
+          : ""
+      }
+    </figure>
+  `,
+    )
+    .join("");
+
+  // 旧形式の記事にも対応
+  const oldImageHTML =
+    !images.length && post.image
+      ? `<figure class="article-photo">
+         <img src="${escapeHTML(post.image)}" alt="">
+       </figure>`
+      : "";
+
+  content.innerHTML = `
+    <div class="article">
+      <div class="article-meta">
+        ${escapeHTML(post.category || "日記")}
+        ・${escapeHTML(post.date || "")}
+      </div>
+      <h1>${escapeHTML(post.title || "無題")}</h1>
+      ${
+        post.description
+          ? `<p class="article-description">${escapeHTML(post.description)}</p>`
+          : ""
+      }
+      <div class="article-body">${escapeHTML(post.body || "")}</div>
+      ${imageHTML || oldImageHTML}
+    </div>
+  `;
+}
+
+// URLに応じて画面を切り替える
+function showRoute() {
+  const hash = location.hash || "#home";
+
+  homeView.hidden = true;
+  articleView.hidden = true;
+  adminView.hidden = true;
+
+  if (hash.startsWith("#post/")) {
+    const id = decodeURIComponent(hash.slice(6));
+    articleView.hidden = false;
+    renderArticle(id);
+  } else if (hash === "#admin") {
+    adminView.hidden = false;
   } else {
-    articleSection.hidden = true;
-    blogSection.hidden = false;
-    document.getElementById("about").hidden = false;
+    homeView.hidden = false;
   }
 }
 
-/* =================================
-   イベント設定
-================================= */
+window.addEventListener("hashchange", showRoute);
 
-searchInput.addEventListener("input", renderPosts);
-
-document.getElementById("backButton").addEventListener("click", () => {
+$("back-home").addEventListener("click", () => {
   location.hash = "#home";
 });
 
-document.getElementById("homeLogo").addEventListener("click", () => {
-  location.hash = "#home";
+// 写真のプレビュー用URLを解放
+function clearPhotoUrls() {
+  photos.forEach((photo) => URL.revokeObjectURL(photo.previewUrl));
+}
+
+// 写真一覧を表示
+function renderPhotos() {
+  const list = $("photo-list");
+  $("photo-count").textContent = `${photos.length} / 30枚`;
+
+  list.innerHTML = photos
+    .map(
+      (photo, index) => `
+    <div class="photo-item" data-index="${index}">
+      <img src="${photo.previewUrl}" alt="">
+      <div>
+        <input
+          type="text"
+          class="caption-input"
+          data-index="${index}"
+          value="${escapeHTML(photo.caption)}"
+          maxlength="150"
+          placeholder="写真の説明（任意）">
+        <div class="photo-controls">
+          <button type="button" data-action="up" data-index="${index}"
+            ${index === 0 ? "disabled" : ""}>↑ 上へ</button>
+          <button type="button" data-action="down" data-index="${index}"
+            ${index === photos.length - 1 ? "disabled" : ""}>↓ 下へ</button>
+          <button type="button" data-action="remove" data-index="${index}">
+            削除
+          </button>
+        </div>
+        <small>${escapeHTML(photo.file.name)}</small>
+      </div>
+    </div>
+  `,
+    )
+    .join("");
+}
+
+// 写真ファイルを追加
+function addPhotos(fileList) {
+  const files = Array.from(fileList || []);
+  let added = 0;
+
+  for (const file of files) {
+    if (!file.type.startsWith("image/")) continue;
+
+    if (file.size > 15 * 1024 * 1024) {
+      alert(`${file.name} は15MBを超えているため追加できません。`);
+      continue;
+    }
+
+    if (photos.length >= 30) {
+      alert("写真は最大30枚までです。");
+      break;
+    }
+
+    photos.push({
+      file,
+      caption: "",
+      previewUrl: URL.createObjectURL(file),
+    });
+
+    added++;
+  }
+
+  renderPhotos();
+
+  if (added > 0) {
+    $("form-message").textContent = `${added}枚の写真を追加しました。`;
+  }
+}
+
+// ファイル選択
+$("photo-input").addEventListener("change", (event) => {
+  addPhotos(event.target.files);
+  event.target.value = "";
 });
 
-window.addEventListener("hashchange", handleRoute);
+// ドラッグ＆ドロップ
+const dropZone = $("drop-zone");
 
-/* =================================
-   初期化
-================================= */
+dropZone.addEventListener("dragover", (event) => {
+  event.preventDefault();
+  dropZone.classList.add("dragover");
+});
 
-document.getElementById("year").textContent = new Date().getFullYear();
+dropZone.addEventListener("dragleave", () => {
+  dropZone.classList.remove("dragover");
+});
 
-renderCategories();
-renderPosts();
-handleRoute();
+dropZone.addEventListener("drop", (event) => {
+  event.preventDefault();
+  dropZone.classList.remove("dragover");
+  addPhotos(event.dataTransfer.files);
+});
+
+// 写真の説明文を保存
+$("photo-list").addEventListener("input", (event) => {
+  if (!event.target.classList.contains("caption-input")) return;
+
+  const index = Number(event.target.dataset.index);
+  if (photos[index]) {
+    photos[index].caption = event.target.value;
+  }
+});
+
+// 写真の順番変更・削除
+$("photo-list").addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-action]");
+  if (!button) return;
+
+  const index = Number(button.dataset.index);
+  const action = button.dataset.action;
+
+  if (action === "remove") {
+    URL.revokeObjectURL(photos[index].previewUrl);
+    photos.splice(index, 1);
+  }
+
+  if (action === "up" && index > 0) {
+    [photos[index - 1], photos[index]] = [photos[index], photos[index - 1]];
+  }
+
+  if (action === "down" && index < photos.length - 1) {
+    [photos[index + 1], photos[index]] = [photos[index], photos[index + 1]];
+  }
+
+  renderPhotos();
+});
+
+// 記事データを作る
+function collectArticle() {
+  const id = String(Date.now());
+
+  return {
+    id,
+    title: $("post-title").value.trim(),
+    category: $("post-category").value.trim(),
+    date: new Date().toISOString().slice(0, 10),
+    description: $("post-description").value.trim(),
+    body: $("post-body").value.trim(),
+    images: photos.map((photo, index) => {
+      const extension = getExtension(photo.file.name);
+      const filename = `photo-${String(index + 1).padStart(2, "0")}.${extension}`;
+
+      return {
+        name: filename,
+        src: `images/articles/post-${id}/${filename}`,
+        caption: photo.caption.trim(),
+      };
+    }),
+  };
+}
+
+function getExtension(filename) {
+  const match = filename.toLowerCase().match(/\.([a-z0-9]+)$/);
+  const ext = match ? match[1] : "jpg";
+
+  // URLやファイル名に使いやすい拡張子に限定
+  return ["jpg", "jpeg", "png", "gif", "webp", "avif"].includes(ext)
+    ? ext
+    : "jpg";
+}
+
+// プレビュー
+$("preview-button").addEventListener("click", () => {
+  const title = $("post-title").value.trim();
+
+  if (!title) {
+    alert("記事タイトルを入力してください。");
+    return;
+  }
+
+  const previewImages = photos
+    .map(
+      (photo) => `
+    <figure class="article-photo">
+      <img src="${photo.previewUrl}" alt="">
+      ${
+        photo.caption
+          ? `<figcaption>${escapeHTML(photo.caption)}</figcaption>`
+          : ""
+      }
+    </figure>
+  `,
+    )
+    .join("");
+
+  $("preview-content").innerHTML = `
+    <div class="article">
+      <div class="article-meta">
+        ${escapeHTML($("post-category").value)}
+      </div>
+      <h1>${escapeHTML(title)}</h1>
+      <p class="article-description">
+        ${escapeHTML($("post-description").value)}
+      </p>
+      <div class="article-body">
+        ${escapeHTML($("post-body").value)}
+      </div>
+      ${previewImages}
+    </div>
+  `;
+
+  $("preview-area").hidden = false;
+  $("preview-area").scrollIntoView({ behavior: "smooth" });
+});
+
+// ZIPを作成してダウンロード
+$("post-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  const message = $("form-message");
+  const title = $("post-title").value.trim();
+
+  if (!title) {
+    alert("記事タイトルを入力してください。");
+    return;
+  }
+
+  if (typeof JSZip === "undefined") {
+    message.textContent =
+      "ZIP作成ライブラリを読み込めません。インターネット接続を確認してください。";
+    return;
+  }
+
+  const submitButton = $("post-form").querySelector('button[type="submit"]');
+
+  submitButton.disabled = true;
+  message.textContent = "ZIPファイルを作成しています...";
+
+  try {
+    const article = collectArticle();
+
+    // 現在の既存記事一覧を読み込む
+    let oldPaths = [];
+
+    try {
+      const response = await fetch("posts/index.json", {
+        cache: "no-store",
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (Array.isArray(data)) oldPaths = data;
+      }
+    } catch (error) {
+      console.warn("既存記事一覧を読み込めませんでした。", error);
+    }
+
+    const postPath = `posts/post-${article.id}.json`;
+
+    // 新しい記事を先頭に追加。重複パスは除外
+    const manifest = [
+      postPath,
+      ...oldPaths.filter((path) => path !== postPath),
+    ];
+
+    const zip = new JSZip();
+
+    zip.file(postPath, JSON.stringify(article, null, 2));
+    zip.file("posts/index.json", JSON.stringify(manifest, null, 2));
+
+    // 写真をZIPに追加
+    for (let index = 0; index < photos.length; index++) {
+      const photo = photos[index];
+      const filename = article.images[index].name;
+      const imagePath = `images/articles/post-${article.id}/${filename}`;
+
+      zip.file(imagePath, photo.file);
+    }
+
+    const blob = await zip.generateAsync({
+      type: "blob",
+      compression: "DEFLATE",
+      compressionOptions: { level: 5 },
+    });
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `blog-post-${article.id}.zip`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    setTimeout(() => URL.revokeObjectURL(url), 30000);
+
+    message.textContent =
+      "ZIPをダウンロードしました。展開してGitHubにアップロードしてください。";
+  } catch (error) {
+    console.error(error);
+    message.textContent =
+      "ZIPの作成に失敗しました。写真や入力内容を確認してください。";
+  } finally {
+    submitButton.disabled = false;
+  }
+});
+
+// 初期表示
+loadPosts().then(showRoute);

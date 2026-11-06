@@ -3,79 +3,103 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="日々の出来事や役立つ情報を発信するブログです。">
-  <title>MY BLOG - 日々の記録</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="写真と文章を楽しむブログ">
+  <title>My Photo Blog</title>
   <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="script.js" defer></script>
 </head>
 <body>
-
   <header class="site-header">
-    <div class="header-inner">
-      <a href="#" class="logo" id="homeLogo">MY BLOG<span>.</span></a>
-      <nav>
-        <a href="#home">ホーム</a>
-        <a href="#about">このブログについて</a>
-      </nav>
-    </div>
+    <a class="logo" href="#home">My Photo Blog</a>
+    <nav>
+      <a href="#home">ホーム</a>
+      <a href="#admin">記事を投稿</a>
+    </nav>
   </header>
 
-  <section class="hero" id="home">
-    <div class="hero-inner">
-      <p class="hero-label">WELCOME TO MY BLOG</p>
-      <h1>日々の暮らしを、<br>もっと楽しく。</h1>
-      <p>日常の出来事や気づき、役立つ情報を発信しています。</p>
-    </div>
-  </section>
-
   <main class="container">
-    <section class="blog-section" id="blog">
-      <div class="section-heading">
-        <div>
-          <p class="section-label">BLOG</p>
-          <h2>最新の記事</h2>
+    <!-- 記事一覧 -->
+    <section id="home-view">
+      <div class="hero">
+        <p class="eyebrow">PHOTO JOURNAL</p>
+        <h1>日々の写真と記録</h1>
+        <p>写真と一緒に、日々の出来事を綴るブログです。</p>
+      </div>
+      <h2 class="section-title">新着記事</h2>
+      <div id="post-list" class="post-list">
+        <p>記事を読み込んでいます...</p>
+      </div>
+    </section>
+
+    <!-- 記事詳細 -->
+    <section id="article-view" hidden>
+      <button class="back-button" id="back-home">← 記事一覧に戻る</button>
+      <article id="article-content"></article>
+    </section>
+
+    <!-- 投稿画面 -->
+    <section id="admin-view" hidden>
+      <div class="hero">
+        <p class="eyebrow">EDITOR</p>
+        <h1>記事を投稿する</h1>
+        <p>記事を作成してZIPファイルをダウンロードします。</p>
+      </div>
+
+      <form id="post-form">
+        <label for="post-title">記事タイトル</label>
+        <input id="post-title" type="text" maxlength="120"
+               placeholder="記事のタイトル" required>
+
+        <label for="post-category">カテゴリ</label>
+        <input id="post-category" type="text" maxlength="40"
+               placeholder="旅行、日常、カフェなど">
+
+        <label for="post-description">紹介文</label>
+        <textarea id="post-description" rows="3" maxlength="300"
+                  placeholder="記事一覧に表示する紹介文"></textarea>
+
+        <label for="post-body">本文</label>
+        <textarea id="post-body" rows="8"
+                  placeholder="記事本文を入力してください"></textarea>
+
+        <div class="photo-heading">
+          <label>写真を追加</label>
+          <span id="photo-count">0 / 30枚</span>
         </div>
-        <span id="postCount"></span>
+
+        <div id="drop-zone" class="drop-zone">
+          <p>写真をここにドラッグ＆ドロップ</p>
+          <p>または</p>
+          <label class="file-button" for="photo-input">写真を選択</label>
+          <input id="photo-input" type="file" accept="image/*"
+                 multiple hidden>
+          <p class="help">最大30枚・1枚15MBまで</p>
+        </div>
+
+        <div id="photo-list" class="photo-list"></div>
+
+        <div class="form-actions">
+          <button type="button" class="secondary-button" id="preview-button">
+            プレビュー
+          </button>
+          <button type="submit" class="primary-button">
+            ZIPをダウンロード
+          </button>
+        </div>
+        <p id="form-message" class="message" aria-live="polite"></p>
+      </form>
+
+      <div id="preview-area" hidden>
+        <h2>プレビュー</h2>
+        <div id="preview-content"></div>
       </div>
-
-      <div class="search-area">
-        <input
-          type="search"
-          id="searchInput"
-          placeholder="記事を検索..."
-          aria-label="記事を検索"
-        >
-      </div>
-
-      <div class="category-list" id="categories"></div>
-
-      <div class="post-grid" id="postList"></div>
-
-      <p class="empty-message" id="emptyMessage" hidden>
-        該当する記事が見つかりませんでした。
-      </p>
-    </section>
-
-    <section class="article-section" id="articleSection" hidden>
-      <button class="back-button" id="backButton">← 記事一覧に戻る</button>
-      <article id="articleContent"></article>
-    </section>
-
-    <section class="about-section" id="about">
-      <p class="section-label">ABOUT</p>
-      <h2>このブログについて</h2>
-      <p>
-        このブログでは、日々の生活で感じたことや、
-        役立つ情報などを発信しています。
-        ゆっくり楽しんでいってください。
-      </p>
     </section>
   </main>
 
   <footer class="site-footer">
-    <p>© <span id="year"></span> MY BLOG. All Rights Reserved.</p>
+    <p>© My Photo Blog</p>
   </footer>
-
-  <script src="script.js"></script>
 </body>
 </html>

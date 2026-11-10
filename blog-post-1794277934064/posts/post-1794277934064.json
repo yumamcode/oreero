@@ -1,0 +1,15 @@
+{
+  "id": "1794277934064",
+  "title": "生地のタイトル",
+  "category": "旅行",
+  "date": "2026-11-10",
+  "description": "記事一覧に対する照会文",
+  "body": "生地本文",
+  "images": [
+    {
+      "name": "photo-01.jpg",
+      "src": "images/articles/post-1794277934064/photo-01.jpg",
+      "caption": ""
+    }
+  ]
+}
